@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "texto": "¿Te sientes culpable o arrepentido después de gastar dinero en cosas innecesarias, especialmente cuando estás triste, aburrido o estresado?"
+  },
+  {
+    "id": 2,
+    "texto": "¿Prefieres no saber nada sobre tus deudas? (por ejemplo, evitas revisar estados de cuenta, ignoras llamadas o no abres cartas de cobranza)"
+  },
+  {
+    "id": 3,
+    "texto": "¿Te sientes tan abrumado por tus deudas que no haces nada para resolverlas, como si ya nada importara?"
+  },
+  {
+    "id": 4,
+    "texto": "¿Te cuesta decir “no” cuando otros te presionan para gastar dinero, por miedo a ser juzgado o rechazado?"
+  },
+  {
+    "id": 5,
+    "texto": "¿Te das cuenta de que tienes deudas, pero actúas como si no existieran, delegando todo a otra persona o simplemente no te involucras?"
+  },
+  {
+    "id": 6,
+    "texto": "¿Te sientes como si ya no fueras la misma persona desde que tienes deudas, o como si tu identidad estuviera ligada a ellas?"
+  },
+  {
+    "id": 7,
+    "texto": "¿Te gastas el dinero en experiencias emocionantes (viajes, deportes extremos, compras impulsivas) solo para no aburrirte o sentirte vivo?"
+  },
+  {
+    "id": 8,
+    "texto": "¿Te dices a ti mismo “pobrecito de mí” y justificas tus deudas como mala suerte, sin buscar soluciones reales?"
+  },
+  {
+    "id": 9,
+    "texto": "¿Sientes que no mereces tener estabilidad financiera por errores del pasado, y por eso sabotéas tus avances?"
+  },
+  {
+    "id": 10,
+    "texto": "¿Pasas mucho tiempo preocupándote por tus deudas, pero no tomas acciones concretas para resolverlas?"
+  },
+  {
+    "id": 11,
+    "texto": "¿Gastas dinero para proyectar una imagen de éxito (en redes o en persona), aunque no puedas pagarlo?"
+  },
+  {
+    "id": 12,
+    "texto": "¿Después de hacer un buen avance (como pagar una deuda), tiendes a gastar de forma impulsiva y volver al punto de partida?"
+  },
+  {
+    "id": 13,
+    "texto": "¿Te sientes como si estuvieras en una “cárcel” de deudas, sin control sobre tu vida?"
+  },
+  {
+    "id": 14,
+    "texto": "¿Prefieres pedir dinero o un préstamo antes que tener una conversación difícil con tu pareja o familia sobre el dinero?"
+  },
+  {
+    "id": 15,
+    "texto": "¿Te sientes culpable por tus decisiones pasadas y usas el gasto como una forma de castigarte?"
+  }
+]

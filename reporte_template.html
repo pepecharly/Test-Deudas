@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte Personalizado</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1, h2 { color: #2c3e50; }
+        .comportamiento { border-left: 4px solid #e74c3c; padding-left: 15px; margin: 20px 0; }
+        .solucion { background-color: #f9f9f9; padding: 10px; border-radius: 5px; }
+        .footer { margin-top: 40px; font-size: 0.9em; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Reporte Personalizado: ¿Por qué tienes deudas?</h1>
+    <p><strong>Fecha:</strong> {{fecha}}</p>
+
+    <h2>🎯 Comportamientos Detectados</h2>
+    {{comportamientos_html}}
+
+    <h2>💡 Recomendación Final</h2>
+    <p>{{recomendacion}}</p>
+
+    <h2>📞 Recursos de Apoyo</h2>
+    <p><strong>Emergencia emocional:</strong> {{emergencia}}</p>
+    <p><strong>Asesoría financiera:</strong> <a href="{{financiero_web}}" target="_blank">{{financiero_nombre}}</a></p>
+
+    <div class="footer">
+        Este reporte fue generado por el Test de Comportamientos Financieros. No sustituye una evaluación profesional.
+    </div>
+</body>
+</html>
