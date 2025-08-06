@@ -148,7 +148,6 @@ else:
             file_name=f"reporte_financiero_{datetime.now().strftime('%Y%m%d')}.pdf",
             mime="application/pdf"
         )
-
     # --- Recursos de ayuda ---
     st.markdown("---")
     st.markdown("### 🆘 Recursos de Apoyo")
@@ -164,8 +163,115 @@ else:
         for t in ayuda["terapia"]:
             st.write(f"**{t['nombre']}** — [Sitio web]({t['web']})")
 
-    # --- Reiniciar test ---
-    if st.button("🔄 Reiniciar Test"):
+    # --- Botones de acción final ---
+    st.markdown("---")
+    col1, col2 = st.columns([1, 1])
+
+    with col1:
+        if st.button("📤 Descargar Reporte en PDF", key="pdf_btn"):
+            # Generar PDF con fpdf2
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_auto_page_break(auto=True, margin=15)
+            pdf.set_font("Arial", "B", 16)
+            pdf.cell(0, 10, "Reporte Personalizado: ¿Por qué tienes deudas?", ln=True, align="C")
+            pdf.set_font("Arial", "", 10)
+            pdf.cell(0, 10, f"Fecha: {datetime.now().strftime('%d/%m/%Y')}", ln=True)
+            pdf.ln(10)
+
+            def split_text(text, max_width=180):
+                words = text.split(' ')
+                lines = []
+                current_line = ""
+                for word in words:
+                    if len(word) > 30:
+                        while len(word) > 30:
+                            lines.append(word[:30])
+                            word = word[30:]
+                        if word:
+                            current_line = word + " "
+                    elif pdf.get_string_width(current_line + word) < max_width:
+                        current_line += word + " "
+                    else:
+                        lines.append(current_line)
+                        current_line = word + " "
+                if current_line:
+                    lines.append(current_line)
+                return lines
+
+            if resultados:
+                for num, data in resultados.items():
+                    pdf.set_font("Arial", "B", 12)
+                    pdf.cell(0, 8, data["titulo"], ln=True)
+                    pdf.set_font("Arial", "", 10)
+                    for line in split_text(f"Descripción: {data['descripcion']}"):
+                        pdf.cell(0, 5, line)
+                        pdf.ln(5)
+                    for line in split_text(f"Síntomas: {data['sintomas']}"):
+                        pdf.cell(0, 5, line)
+                        pdf.ln(5)
+                    for line in split_text(f"Solución: {data['solucion']}"):
+                        pdf.cell(0, 5, line)
+                        pdf.ln(5)
+                    pdf.ln(4)
+            else:
+                for line in split_text("No se detectaron comportamientos de riesgo significativos."):
+                    pdf.cell(0, 5, line)
+                    pdf.ln(5)
+
+            pdf.ln(8)
+            pdf.set_font("Arial", "B", 12)
+            pdf.cell(0, 10, "Recomendación Final", ln=True)
+            pdf.set_font("Arial", "", 10)
+            recomendacion_text = recomendacion if resultados else "No se detectaron comportamientos de riesgo."
+            for line in split_text(recomendacion_text):
+                pdf.cell(0, 5, line)
+                pdf.ln(5)
+
+            pdf.ln(10)
+            pdf.set_font("Arial", "B", 12)
+            pdf.cell(0, 10, "Recursos de Apoyo", ln=True)
+            pdf.set_font("Arial", "", 10)
+            for e in ayuda["emergencia"]:
+                text = f"🚨 {e['nombre']}: {e['telefono']} - {e['web']}"
+                for line in split_text(text):
+                    pdf.cell(0, 6, line)
+                    pdf.ln(6)
+            for f in ayuda["financiero"]:
+                text = f"💼 {f['nombre']} ({f['pais']}): {f['web']}"
+                for line in split_text(text):
+                    pdf.cell(0, 6, line)
+                    pdf.ln(6)
+            for t in ayuda["terapia"]:
+                text = f"🧠 {t['nombre']}: {t['web']}"
+                for line in split_text(text):
+                    pdf.cell(0, 6, line)
+                    pdf.ln(6)
+
+            try:
+                pdf_output = pdf.output(dest="S").encode("latin1")
+            except Exception as e:
+                st.error("No se pudo generar el PDF.")
+                st.stop()
+
+            st.download_button(
+                "💾 Descargar PDF",
+                data=pdf_output,
+                file_name=f"reporte_financiero_{datetime.now().strftime('%Y%m%d')}.pdf",
+                mime="application/pdf",
+                key="download_pdf"
+            )
+
+    with col2:
+        if st.button("🔄 Regresar a la encuesta", key="restart_btn"):
+            # Solo reinicia el estado del cuestionario
+            st.session_state.finalizado = False
+            st.session_state.respuestas = {}
+            st.rerun()
+
+    # --- Reiniciar completamente (opcional, si se quiere)
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("🗑️ Reiniciar todo (limpiar datos)"):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
