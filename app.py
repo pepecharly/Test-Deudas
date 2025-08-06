@@ -1,6 +1,5 @@
 import streamlit as st
 import json
-from datetime import datetime
 
 # --- Configuración ---
 st.set_page_config(page_title="Test: ¿Por qué tienes deudas?", layout="centered")
@@ -116,17 +115,10 @@ else:
         for t in ayuda["terapia"]:
             st.write(f"**{t['nombre']}** — [Sitio web]({t['web']})")
 
-    # --- Botones de navegación ---
+    # --- Botón único: Reiniciar todo y regresar a la encuesta ---
     st.markdown("---")
-    col1, col2 = st.columns([1, 1])
-
-    with col1:
-        if st.button("🔄 Regresar a la encuesta", key="restart_btn"):
-            st.session_state.finalizado = False
-            st.rerun()
-
-    with col2:
-        if st.button("🗑️ Reiniciar todo", key="clear_all"):
-            for key in list(st.session_state.keys()):
-                del st.session_state[key]
-            st.rerun()
+    if st.button("🔄 Reiniciar test y regresar a la encuesta"):
+        # Limpiar todo el estado
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
