@@ -1,4 +1,0 @@
-streamlit
-weasyprint
-jinja2
-python-dateutil
