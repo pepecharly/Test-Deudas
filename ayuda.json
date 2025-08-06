@@ -2,29 +2,29 @@
   "emergencia": [
     {
       "nombre": "Línea de Prevención del Suicidio (México)",
-      "teléfono": "800 911 2000",
+      "telefono": "800 911 2000",
       "web": "https://www.salud.gob.mx"
     },
     {
       "nombre": "National Suicide & Crisis Lifeline (EE.UU.)",
-      "teléfono": "988",
+      "telefono": "988",
       "web": "https://988lifeline.org"
     },
     {
       "nombre": "Teléfono de la Esperanza (España)",
-      "teléfono": "900 20 10 10",
+      "telefono": "900 20 10 10",
       "web": "https://www.telefonodelaesperanza.org"
     }
   ],
   "financiero": [
     {
       "nombre": "Consejería Financiera Gratuita (CONDECOVI)",
-      "país": "México",
+      "pais": "México",
       "web": "https://www.gob.mx/condedeci"
     },
     {
-      "nombre": "National Foundation for Credit Counseling (EE.UU.)",
-      "país": "Estados Unidos",
+      "nombre": "National Foundation for Credit Counseling",
+      "pais": "Estados Unidos",
       "web": "https://www.nfcc.org"
     }
   ],
