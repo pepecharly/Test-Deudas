@@ -1,9 +1,7 @@
 import streamlit as st
 import json
 from datetime import datetime
-from weasyprint import HTML
-from jinja2 import Template
-import os
+from fpdf import FPDF
 
 # --- Configuración ---
 st.set_page_config(page_title="Test: ¿Por qué tienes deudas?", layout="centered")
@@ -23,7 +21,7 @@ def cargar_datos():
 
 comportamientos, preguntas, evaluacion, ayuda = cargar_datos()
 
-# --- Estado de la app ---
+# --- Estado ---
 if "respuestas" not in st.session_state:
     st.session_state.respuestas = {}
 if "finalizado" not in st.session_state:
@@ -47,12 +45,11 @@ if not st.session_state.finalizado:
         )
         st.session_state.respuestas[idx] = (respuesta == "Sí")
 
-    # Botón para resultados
     if st.button("📊 Mostrar Resultados"):
         st.session_state.finalizado = True
         st.rerun()
 
-# --- Mostrar resultados ---
+# --- Resultados ---
 else:
     # Detectar comportamientos
     resultados = {}
@@ -63,14 +60,11 @@ else:
                 if key in comportamientos:
                     resultados[key] = comportamientos[key]
 
-    # Alerta de emergencia si se detecta el comportamiento 5
+    # ⚠️ Alerta de emergencia si se detecta el comportamiento 5
     if "5" in resultados:
         st.error("🚨 **Si estás teniendo pensamientos suicidas, por favor busca ayuda inmediata.**")
-        emergencia_list = "\n".join([f"- {e['nombre']}: {e['teléfono']} ({e['web']})" for e in ayuda["emergencia"]])
-        st.markdown(f"""
-        **Líneas de ayuda:**
-        {emergencia_list}
-        """)
+        for e in ayuda["emergencia"]:
+            st.write(f"📞 **{e['nombre']}**: {e['telefono']} — [Web]({e['web']})")
         st.stop()
 
     # Mostrar reporte
@@ -79,24 +73,13 @@ else:
     if resultados:
         st.success(f"Se detectaron **{len(resultados)} comportamientos** clave.")
 
-        html_parts = ""
         for num, data in resultados.items():
             with st.expander(f"⚠️ {data['titulo']}"):
                 st.markdown(f"**Descripción:** {data['descripcion']}")
                 st.markdown(f"**Síntomas:** {data['sintomas']}")
                 st.markdown(f"**Solución:** {data['solucion']}")
 
-            # Agregar al HTML del PDF
-            html_parts += f"""
-            <div class="comportamiento">
-                <h3>{data['titulo']}</h3>
-                <p><strong>Descripción:</strong> {data['descripcion']}</p>
-                <p><strong>Síntomas:</strong> {data['sintomas']}</p>
-                <div class="solucion"><strong>Solución:</strong> {data['solucion']}</div>
-            </div>
-            """
-
-        # Recomendación final
+        # Recomendación
         if len(resultados) <= 2:
             recomendacion = "Estás en buen camino. Trabaja en los comportamientos detectados con pequeños pasos."
         elif len(resultados) <= 5:
@@ -115,30 +98,53 @@ else:
 
     # --- Botón para descargar PDF ---
     if st.button("📥 Descargar Reporte en PDF"):
-        fecha = datetime.now().strftime("%d/%m/%Y")
-        emergencia = ", ".join([e["teléfono"] for e in ayuda["emergencia"][:1]])
-        financiero_nombre = ayuda["financiero"][0]["nombre"]
-        financiero_web = ayuda["financiero"][0]["web"]
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", "B", 16)
+        pdf.cell(0, 10, "Reporte Personalizado: ¿Por qué tienes deudas?", ln=True, align="C")
+        pdf.set_font("Arial", "", 10)
+        pdf.cell(0, 10, f"Fecha: {datetime.now().strftime('%d/%m/%Y')}", ln=True)
+        pdf.ln(10)
 
-        with open("reporte_template.html", "r", encoding="utf-8") as f:
-            template_str = f.read()
-        template = Template(template_str)
+        # Agregar comportamientos detectados
+        if resultados:
+            for num, data in resultados.items():
+                pdf.set_font("Arial", "B", 12)
+                pdf.cell(0, 8, data["titulo"], ln=True)
+                pdf.set_font("Arial", "", 10)
+                pdf.multi_cell(0, 5, f"Descripción: {data['descripcion']}")
+                pdf.multi_cell(0, 5, f"Síntomas: {data['sintomas']}")
+                pdf.multi_cell(0, 5, f"Solución: {data['solucion']}")
+                pdf.ln(4)
+        else:
+            pdf.multi_cell(0, 6, "No se detectaron comportamientos de riesgo significativos.")
 
-        html_final = template.render(
-            fecha=fecha,
-            comportamientos_html=html_parts if html_parts else "<p>No se detectaron comportamientos.</p>",
-            recomendacion=recomendacion if resultados else "No se detectaron comportamientos de riesgo.",
-            emergencia=emergencia,
-            financiero_nombre=financiero_nombre,
-            financiero_web=financiero_web
-        )
+        # Recomendación
+        pdf.ln(8)
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(0, 10, "Recomendación Final", ln=True)
+        pdf.set_font("Arial", "", 10)
+        pdf.multi_cell(0, 6, recomendacion if resultados else "No se detectaron comportamientos de riesgo.")
 
-        # Generar PDF
-        pdf = HTML(string=html_final).write_pdf()
+        # Recursos
+        pdf.ln(10)
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(0, 10, "Recursos de Apoyo", ln=True)
+        pdf.set_font("Arial", "", 10)
+        for e in ayuda["emergencia"]:
+            pdf.cell(0, 6, f"🚨 {e['nombre']}: {e['telefono']} - {e['web']}", ln=True)
+        for f in ayuda["financiero"]:
+            pdf.cell(0, 6, f"💼 {f['nombre']} ({f['pais']}): {f['web']}", ln=True)
+        for t in ayuda["terapia"]:
+            pdf.cell(0, 6, f"🧠 {t['nombre']}: {t['web']}", ln=True)
 
+        # Generar PDF en memoria
+        pdf_output = pdf.output(dest="S").encode("latin1")
+
+        # Botón de descarga
         st.download_button(
             "💾 Descargar PDF",
-            data=pdf,
+            data=pdf_output,
             file_name=f"reporte_financiero_{datetime.now().strftime('%Y%m%d')}.pdf",
             mime="application/pdf"
         )
@@ -148,11 +154,11 @@ else:
     st.markdown("### 🆘 Recursos de Apoyo")
     with st.expander("📞 Líneas de emergencia emocional"):
         for e in ayuda["emergencia"]:
-            st.write(f"**{e['nombre']}**: {e['teléfono']} — [Web]({e['web']})")
+            st.write(f"**{e['nombre']}**: {e['telefono']} — [Web]({e['web']})")
 
     with st.expander("💼 Asesoría financiera"):
         for f in ayuda["financiero"]:
-            st.write(f"**{f['nombre']}** ({f['país']}) — [Ir al sitio]({f['web']})")
+            st.write(f"**{f['nombre']}** ({f['pais']}) — [Ir al sitio]({f['web']})")
 
     with st.expander("🧠 Terapia y salud mental"):
         for t in ayuda["terapia"]:
