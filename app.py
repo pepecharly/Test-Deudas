@@ -1,8 +1,6 @@
 import streamlit as st
 import json
 from datetime import datetime
-from fpdf import FPDF
-import os
 
 # --- Configuración ---
 st.set_page_config(page_title="Test: ¿Por qué tienes deudas?", layout="centered")
@@ -65,11 +63,12 @@ else:
                 if key in comportamientos:
                     resultados[key] = comportamientos[key]
 
-    # ⚠️ Alerta de emergencia si se detecta el comportamiento 5
+    # ⚠️ Alerta de emergencia si se detecta el comportamiento 5 (suicidio)
     if "5" in resultados:
         st.error("🚨 **Si estás teniendo pensamientos suicidas, por favor busca ayuda inmediata.**")
+        st.markdown("### 📞 Líneas de ayuda emocional:")
         for e in ayuda["emergencia"]:
-            st.write(f"📞 **{e['nombre']}**: {e['telefono']} — [Web]({e['web']})")
+            st.write(f"- **{e['nombre']}**: {e['telefono']} — [Web]({e['web']})")
         st.stop()
 
     # Mostrar reporte
@@ -84,7 +83,7 @@ else:
                 st.markdown(f"**Síntomas:** {data['sintomas']}")
                 st.markdown(f"**Solución:** {data['solucion']}")
 
-        # Recomendación
+        # Recomendación final
         if len(resultados) <= 2:
             recomendacion = "Estás en buen camino. Trabaja en los comportamientos detectados con pequeños pasos."
         elif len(resultados) <= 5:
@@ -101,151 +100,10 @@ else:
         st.markdown("### 🎉 ¡Felicidades!")
         st.markdown("No se detectaron comportamientos de riesgo. Tu relación con el dinero es consciente y equilibrada.")
 
-    # --- Botones de acción ---
-    st.markdown("---")
-    col1, col2 = st.columns([1, 1])
-
-    with col1:
-        if st.button("📥 Descargar Reporte en PDF", key="pdf_btn"):
-            pdf = FPDF()
-            pdf.add_font("DejaVu", "", "fonts/DejaVuSans.ttf", uni=True)
-            pdf.add_page()
-            pdf.set_auto_page_break(auto=True, margin=15)
-            pdf.set_font("DejaVu", size=12)
-
-            pdf.cell(0, 10, "Reporte Personalizado: ¿Por qué tienes deudas?", ln=True, align="C")
-            pdf.set_font("DejaVu", size=10)
-            pdf.cell(0, 10, f"Fecha: {datetime.now().strftime('%d/%m/%Y')}", ln=True)
-            pdf.ln(10)
-
-            def split_text(text, max_width=180):
-                words = text.split(' ')
-                lines = []
-                current_line = ""
-                for word in words:
-                    if len(word) > 30:
-                        while len(word) > 30:
-                            lines.append(word[:30])
-                            word = word[30:]
-                        if word:
-                            current_line = word + " "
-                    else:
-                        test_line = current_line + word + " "
-                        try:
-                            if pdf.get_string_width(test_line) < max_width:
-                                current_line = test_line
-                            else:
-                                lines.append(current_line)
-                                current_line = word + " "
-                        except:
-                            lines.append(current_line)
-                            current_line = word + " "
-                if current_line.strip():
-                    lines.append(current_line)
-                return lines
-
-            if resultados:
-                for num, data in resultados.items():
-                    pdf.set_font("DejaVu", size=12, style="B")
-                    pdf.cell(0, 8, data["titulo"], ln=True)
-                    pdf.set_font("DejaVu", size=10)
-                    for line in split_text(f"Descripción: {data['descripcion']}"):
-                        try:
-                            pdf.cell(0, 5, line)
-                            pdf.ln(5)
-                        except:
-                            pass
-                    for line in split_text(f"Síntomas: {data['sintomas']}"):
-                        try:
-                            pdf.cell(0, 5, line)
-                            pdf.ln(5)
-                        except:
-                            pass
-                    for line in split_text(f"Solución: {data['solucion']}"):
-                        try:
-                            pdf.cell(0, 5, line)
-                            pdf.ln(5)
-                        except:
-                            pass
-                    pdf.ln(4)
-            else:
-                for line in split_text("No se detectaron comportamientos de riesgo significativos."):
-                    try:
-                        pdf.cell(0, 5, line)
-                        pdf.ln(5)
-                    except:
-                        pass
-
-            pdf.ln(8)
-            pdf.set_font("DejaVu", size=12, style="B")
-            pdf.cell(0, 10, "Recomendación Final", ln=True)
-            pdf.set_font("DejaVu", size=10)
-            rec_text = recomendacion if resultados else "No se detectaron comportamientos de riesgo."
-            for line in split_text(rec_text):
-                try:
-                    pdf.cell(0, 5, line)
-                    pdf.ln(5)
-                except:
-                    pass
-
-            pdf.ln(10)
-            pdf.set_font("DejaVu", size=12, style="B")
-            pdf.cell(0, 10, "Recursos de Apoyo", ln=True)
-            pdf.set_font("DejaVu", size=10)
-            for e in ayuda["emergencia"]:
-                text = f"🚨 {e['nombre']}: {e['telefono']} - {e['web']}"
-                for line in split_text(text):
-                    try:
-                        pdf.cell(0, 6, line)
-                        pdf.ln(6)
-                    except:
-                        pass
-            for f in ayuda["financiero"]:
-                text = f"💼 {f['nombre']} ({f['pais']}): {f['web']}"
-                for line in split_text(text):
-                    try:
-                        pdf.cell(0, 6, line)
-                        pdf.ln(6)
-                    except:
-                        pass
-            for t in ayuda["terapia"]:
-                text = f"🧠 {t['nombre']}: {t['web']}"
-                for line in split_text(text):
-                    try:
-                        pdf.cell(0, 6, line)
-                        pdf.ln(6)
-                    except:
-                        pass
-
-            try:
-                pdf_output = pdf.output(dest="S").encode("latin1")
-            except Exception as e:
-                st.error("No se pudo generar el PDF.")
-                st.stop()
-
-            st.download_button(
-                "💾 Descargar PDF",
-                data=pdf_output,
-                file_name=f"reporte_financiero_{datetime.now().strftime('%Y%m%d')}.pdf",
-                mime="application/pdf",
-                key="download_pdf"
-            )
-
-    with col2:
-        if st.button("🔄 Regresar a la encuesta", key="restart_btn"):
-            st.session_state.finalizado = False
-            st.rerun()
-
-    # Reiniciar todo
-    st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("🗑️ Reiniciar todo"):
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
-        st.rerun()
-
-    # Recursos de ayuda
+    # --- Recursos de ayuda ---
     st.markdown("---")
     st.markdown("### 🆘 Recursos de Apoyo")
+
     with st.expander("📞 Líneas de emergencia emocional"):
         for e in ayuda["emergencia"]:
             st.write(f"**{e['nombre']}**: {e['telefono']} — [Web]({e['web']})")
@@ -257,3 +115,18 @@ else:
     with st.expander("🧠 Terapia y salud mental"):
         for t in ayuda["terapia"]:
             st.write(f"**{t['nombre']}** — [Sitio web]({t['web']})")
+
+    # --- Botones de navegación ---
+    st.markdown("---")
+    col1, col2 = st.columns([1, 1])
+
+    with col1:
+        if st.button("🔄 Regresar a la encuesta", key="restart_btn"):
+            st.session_state.finalizado = False
+            st.rerun()
+
+    with col2:
+        if st.button("🗑️ Reiniciar todo", key="clear_all"):
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.rerun()
